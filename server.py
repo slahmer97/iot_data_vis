@@ -1,33 +1,85 @@
-from flask import Flask, Markup, render_template
+from flask import Flask, Markup, render_template, redirect
 from flask import request
 import json
 import sqlite3
 
 app = Flask(__name__)
 
-labels = [
-    'JAN', 'FEB', 'MAR', 'APR',
-    'MAY', 'JUN', 'JUL', 'AUG',
-    'SEP', 'OCT', 'NOV', 'DEC'
-]
+@app.route('/plot_1d_data')
+def plot_1d_data():
+    data_type = request.args.get("type", "pressure")
 
-values = [
-    967.67, 1190.89, 1079.75, 1349.19,
-    2328.91, 2504.28, 2873.83, 4764.87,
-    4349.29, 6458.30, 9907, 16297
-]
+    id_cur = sqlite3.connect("example.db").cursor()
+    pres_cur = sqlite3.connect("example.db").cursor()
 
-colors = [
-    "#F7464A", "#46BFBD", "#FDB45C", "#FEDCBA",
-    "#ABCDEF", "#DDDDDD", "#ABCABC", "#4169E1",
-    "#C71585", "#FF4500", "#FEDCBA", "#46BFBD"]
+    first = 1
+    time_labels = []
+    data = []
+
+    id_cur.execute("""SELECT DISTINCT node_id FROM iot_stat""")
+    ids = id_cur.fetchall()
+    for id in ids:
+        row_data = []
+        pres_cur.execute("""SELECT val, val_date FROM iot_stat WHERE node_id=? and type=?""", [id[0], data_type])
+        records = pres_cur.fetchall()
+        for row in records:
+            if first:
+                time_labels.append(row[1])
+            row_data.append(row[0])
+        if first:
+            first = 0;
+        data.append(row_data)
+    return render_template('line_chart_1d.html', title='Nodes {}'.format(data_type), labels=time_labels, values=data, id_tab=ids)
+
+@app.route('/plot_3d_data')
+def plot_3d_data():
+    type = request.args.get("type", "accel")
+
+    id_cur = sqlite3.connect("example.db").cursor()
+    data_cur = sqlite3.connect("example.db").cursor()
+
+    first = 1
+    time_labels = []
+    data_x = []
+    data_y = []
+    data_z = []
+
+    id_cur.execute("""SELECT DISTINCT node_id FROM iot_stat""")
+    ids = id_cur.fetchall()
+    for id in ids:
+        row_x = []
+        row_y = []
+        row_z = []
+        data_cur.execute("""SELECT val, val_date, type FROM iot_stat WHERE node_id=? and type in (?,?,?)""", [id[0], '{}_x'.format(type), '{}_y'.format(type), '{}_z'.format(type)])
+        records = data_cur.fetchall()
+        for row in records:
+            if row[2] == "{}_x".format(type):
+                if first:
+                    time_labels.append(row[1])
+                row_x.append(row[0])
+            elif row[2] == "{}_y".format(type):
+                row_y.append(row[0])
+            else:
+                row_z.append(row[0])
+        if first:
+            first = 0;
+        data_x.append(row_x)
+        data_y.append(row_y)
+        data_z.append(row_z)
+
+        if(type == "mg"):
+            str_type = "magne"
+        elif(type == "gr"):
+            str_type = "gyros"
+        else:
+            str_type = type
+
+    return render_template('line_chart_3d.html', title='Nodes {}'.format(str_type), labels=time_labels, val_x=data_x, val_y=data_y, val_z=data_z, id_tab=ids)
 
 
-@app.route('/temps')
-def line():
-    line_labels=labels
-    line_values=values
-    return render_template('line_chart.html', title='Nodes Temprature', max=17000, labels=line_labels, values=line_values)
+@app.route('/')
+def home():
+    return redirect('/plot_1d_data')
 
 @app.route('/dump')
 def dump_data():
@@ -38,10 +90,11 @@ def dump_data():
         records = c.fetchall()
         ret = ""
         for rec in records:
-             ret += "{}<br>".format(str(rec))
-        return ret 
+            ret += "{} {}<br>".format(cnt, str(rec))
+        return ret
     except Exception as inst:
         return inst
+
 @app.route('/post_data',methods=["POST"])
 def post_data():
     try:
@@ -83,4 +136,3 @@ if __name__ == '__main__':
     except Exception as inst:
         print("E : {}".format(inst))
     app.run(host='0.0.0.0', port=9999)
-

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ title }}</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@0.7.7"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="/plot_1d_data">Pressure</a>
+    <a class="navbar-brand" href="/plot_1d_data?type=light">Light </a>
+    <a class="navbar-brand" href="/plot_3d_data">Accelerometer</a>
+    <a class="navbar-brand" href="/plot_3d_data?type=mg">Magnetometer</a>
+    <a class="navbar-brand" href="/plot_3d_data?type=gr">Gyroscope</a>
+  </nav>
+
+  <div style="margin:auto;width:75%;text-align:center;">
+    <h1>{{ title }}</h1>
+    <canvas id="chart_x" style="margin-bottom:2%;"></canvas>
+    <canvas id="chart_y" style="margin-bottom:2%;"></canvas>
+    <canvas id="chart_z" style="margin-bottom:2%;"></canvas>
+  </div>
+
+  <script>
+    ids = [{% for id in id_tab %}
+            "{{id[0]}}",
+          {% endfor %}];
+
+    window.chartColors = {
+    	red: 'rgb(255, 99, 132)',
+    	orange: 'rgb(255, 159, 64)',
+    	yellow: 'rgb(255, 205, 86)',
+    	green: 'rgb(75, 192, 192)',
+    	blue: 'rgb(54, 162, 235)',
+    	purple: 'rgb(153, 102, 255)',
+    	grey: 'rgb(201, 203, 207)'
+    };
+
+    var config_x = {
+      type: 'line',
+      data: {
+        labels : [
+          {% for item in labels %}
+            "{{ item }}",
+          {% endfor %}
+          ],
+        datasets : []
+      },
+      options: {
+				responsive: true,
+        title: {
+          display: true,
+          text: '{{ title }} x'
+        },
+        tooltips: {
+          mode: 'nearest',
+          intersect: false,
+        },
+        hover: {
+          mode: 'nearest',
+          axis: 'xy',
+          intersect: true
+        },
+        scales: {
+          xAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'DateTime'
+            }
+          }],
+          yAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Value'
+            }
+          }]
+        },
+				plugins: {
+          zoom: {
+            pan: {
+                enabled: true,
+                mode: 'xy'
+            },
+            zoom: {
+              enabled: true,
+              mode: 'xy',
+            }
+          }
+				}
+			}
+    };
+
+    var config_y = {
+      type: 'line',
+      data: {
+        labels : [
+          {% for item in labels %}
+            "{{ item }}",
+          {% endfor %}
+          ],
+        datasets : []
+      },
+      options: {
+				responsive: true,
+        title: {
+          display: true,
+          text: '{{ title }} y'
+        },
+        tooltips: {
+          mode: 'nearest',
+          intersect: false,
+        },
+        hover: {
+          mode: 'nearest',
+          axis: 'xy',
+          intersect: true
+        },
+        scales: {
+          xAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'DateTime'
+            }
+          }],
+          yAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Value'
+            }
+          }]
+        },
+				plugins: {
+          zoom: {
+            pan: {
+                enabled: true,
+                mode: 'xy'
+            },
+            zoom: {
+              enabled: true,
+              mode: 'xy',
+            }
+          }
+				}
+			}
+    };
+
+    var config_z = {
+      type: 'line',
+      data: {
+        labels : [
+          {% for item in labels %}
+            "{{ item }}",
+          {% endfor %}
+          ],
+        datasets : []
+      },
+      options: {
+				responsive: true,
+        title: {
+          display: true,
+          text: '{{ title }} z'
+        },
+        tooltips: {
+          mode: 'nearest',
+          intersect: false,
+        },
+        hover: {
+          mode: 'nearest',
+          axis: 'xy',
+          intersect: true
+        },
+        scales: {
+          xAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'DateTime'
+            }
+          }],
+          yAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Value'
+            }
+          }]
+        },
+				plugins: {
+          zoom: {
+            pan: {
+                enabled: true,
+                mode: 'xy'
+            },
+            zoom: {
+              enabled: true,
+              mode: 'xy',
+            }
+          }
+				}
+			}
+    };
+
+    var colorNames = Object.keys(window.chartColors);
+    {% for item in val_x %}
+        var dataset = {
+          label: 'Node ' + ids[config_x.data.datasets.length],
+          backgroundColor: window.chartColors[colorNames[config_x.data.datasets.length % colorNames.length]],
+	        borderColor: window.chartColors[colorNames[config_x.data.datasets.length % colorNames.length]],
+          data : [
+            {%for val in item %}
+              {{val}},
+            {% endfor %}
+          ],
+          fill: false
+        }
+        config_x.data.datasets.push(dataset)
+    {% endfor %}
+
+    {% for item in val_y %}
+        var dataset = {
+          label: 'Node ' + ids[config_y.data.datasets.length],
+          backgroundColor: window.chartColors[colorNames[config_y.data.datasets.length % colorNames.length]],
+          borderColor: window.chartColors[colorNames[config_y.data.datasets.length % colorNames.length]],
+          data : [
+            {%for val in item %}
+              {{val}},
+            {% endfor %}
+          ],
+          fill: false
+        }
+        config_y.data.datasets.push(dataset)
+    {% endfor %}
+
+    {% for item in val_z %}
+        var dataset = {
+          label: 'Node ' + ids[config_z.data.datasets.length],
+          backgroundColor: window.chartColors[colorNames[config_z.data.datasets.length % colorNames.length]],
+          borderColor: window.chartColors[colorNames[config_z.data.datasets.length % colorNames.length]],
+          data : [
+            {%for val in item %}
+              {{val}},
+            {% endfor %}
+          ],
+          fill: false
+        }
+        config_z.data.datasets.push(dataset)
+    {% endfor %}
+
+    // get bar chart canvas
+    window.onload = function() {
+      var ctx_x = document.getElementById("chart_x").getContext("2d");
+      var ctx_y = document.getElementById("chart_y").getContext("2d");
+      var ctx_z = document.getElementById("chart_z").getContext("2d");
+      window.chart_x = new Chart(ctx_x,config_x);
+      window.chart_y = new Chart(ctx_y,config_y);
+      window.chart_z = new Chart(ctx_z,config_z);
+    }
+
+  </script>
+</body>
+</html>
